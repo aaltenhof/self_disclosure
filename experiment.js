@@ -162,7 +162,6 @@ function createTrials(trialsData) {
             stimulus: function() {
                 return `
                     <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                        <h3>Question:</h3>
                         ${questionBox}
                         <p style="margin-top: 30px; color: #666;">Press any key to continue.</p>
                     </div>
@@ -179,7 +178,7 @@ function createTrials(trialsData) {
                 stimulus: `
                 <div style="text-align: center; max-width: 800px; margin: 0 auto;">
                     ${questionBox}
-                    <p style="font-size: 20px; margin: 20px 0;"><strong>How personal is this question?</strong></p>
+                    <p style="font-size: 20px; margin: 20px 0;"><strong>How personal is this question or prompt?</strong></p>
                 </div>`,
                 labels: [
                 '0<br>Not <br>personal at all', 
@@ -210,7 +209,7 @@ function createTrials(trialsData) {
             stimulus: `
               <div style="text-align: center; max-width: 800px; margin: 0 auto;">
                   ${questionBox}
-                  <p style="font-size: 20px; margin: 20px 0;"><strong>How personal is this question?</strong></p>
+                  <p style="font-size: 20px; margin: 20px 0;"><strong>How difficult is this question or prompt to answer?</strong></p>
               </div>`,
             labels: [
                 '0<br>Very<br>easy', 
@@ -264,7 +263,7 @@ async function runExperiment() {
     try {
         console.log('Participant ID:', participant_id);
 
-        const trialsData = await loadQuestions('questions.csv');
+        const trialsData = jsPsych.randomization.shuffle(await loadQuestions('questions.csv'));
         const ratingTrials = createTrials(trialsData);
 
         console.log(`Created ${ratingTrials.length} trial screens`);
