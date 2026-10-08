@@ -15,6 +15,12 @@ if (sonaId) {
     console.log('No SONA ID found, using random ID:', participant_id);
 }
 
+const jsPsych = initJsPsych({
+    show_progress_bar: true,
+    on_finish: function() {
+    }
+});
+
 
 const consent = {
     type: jsPsychHtmlButtonResponse,  
