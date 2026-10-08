@@ -5,6 +5,8 @@ function getUrlParam(param) {
 
 const sonaId = getUrlParam('sona_id'); 
 
+let globalTrialNumber = 0; 
+
 let participant_id;
 
 if (sonaId) {
@@ -146,55 +148,45 @@ const instructions = {
 function createTrials(trialsData) {
     const experimentTrials = [];
     
+
     trialsData.forEach((item) => {
         globalTrialNumber++;
-        
+
+        const questionBox = `
+            <div style="font-size: 22px; margin: 20px 0; padding: 20px; background-color: #f0f0f0; border-radius: 10px;">
+                ${item.question}
+            </div>`;
+
         const displayTrial = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: function() {
                 return `
                     <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                        <h3>Words:</h3>
-                        <div style="font-size: 24px; margin: 20px 0; padding: 20px; background-color: #f0f0f0; border-radius: 10px;">
-                            ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
-                        </div>
-                        <h3>Category:</h3>
-                        <div style="font-size: 22px; margin: 20px 0;">
-                            "${item.category_response}"
-                        </div>
+                        <h3>Question:</h3>
+                        ${questionBox}
                         <p style="margin-top: 30px; color: #666;">Press any key to continue.</p>
                     </div>
                 `;
             },
             data: {
-                trial_type: 'display',
-                trial_number: globalTrialNumber,
-                group_id: item.group_id
+                custom_trial_type: 'display_trial',
             }
         };
 
-        // applicability rating
-        const applicabilityTrial = {
+        // personal rating
+        const personalTrial = {
             type: jsPsychHtmlSliderResponse,
-                stimulus: function() {
-                    return `
-                        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                            <div style="font-size: 18px; margin-bottom: 15px; padding: 15px; background-color: #f0f0f0; border-radius: 8px;">
-                                ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
-                            </div>
-                            <div style="font-size: 16px; margin-bottom: 20px;">
-                                "${item.category_response}"
-                            </div>
-                            <p style="font-size: 20px; margin: 20px 0;"><strong>How well does this description apply to all four words?</strong></p>
-                        </div>
-                    `;
-                },
+                stimulus: `
+                <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                    ${questionBox}
+                    <p style="font-size: 20px; margin: 20px 0;"><strong>How personal is this question?</strong></p>
+                </div>`,
                 labels: [
-                '0<br>Not at all<br>applicable', 
-                '25<br>Not really all<br>applicable', 
-                '50<br>Neutral<br>', 
-                '75<br>Moderately<br>applicable', 
-                '100<br>Perfectly<br>applicable'
+                '0<br>Not <br>personal at all', 
+                '25<br>Not really <br>personal', 
+                '50<br>Neither <br>personal nor impersonal<br>', 
+                '75<br>Moderately<br>personal', 
+                '100<br>Very<br>personal'
             ],
             min: 0,
             max: 100,
@@ -204,43 +196,28 @@ function createTrials(trialsData) {
             slider_width: 600,
             button_label: 'Continue',
             data: {
-                custom_trial_type: 'applicability_rating',
+                custom_trial_type: 'personal_rating',
                 trial_number: globalTrialNumber,
                 participant_id: participant_id,
-                group_id: item.group_id,
-                word1: item.word1,
-                word2: item.word2,
-                word3: item.word3,
-                word4: item.word4,
-                category_response: item.category_response,
-                condition: item.condition,
-                difficulty: item.difficulty,
-                consensus: item.consensus
+                q_id: item.q_id,
+                group: item.group
             }
         };
 
-        // specificity rating
-        const specificityTrial = {
+        // difficulty rating
+        const difficultyTrial = {
             type: jsPsychHtmlSliderResponse,
-            stimulus: function() {
-                return `
-                    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                        <div style="font-size: 18px; margin-bottom: 15px; padding: 15px; background-color: #f0f0f0; border-radius: 8px;">
-                            ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
-                        </div>
-                        <div style="font-size: 16px; margin-bottom: 20px;">
-                            "${item.category_response}"
-                        </div>
-                        <p style="font-size: 20px; margin: 20px 0;"><strong>How specific is this description?</strong></p>
-                    </div>
-                `;
-            },
+            stimulus: `
+              <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                  ${questionBox}
+                  <p style="font-size: 20px; margin: 20px 0;"><strong>How personal is this question?</strong></p>
+              </div>`,
             labels: [
-                '0<br>Very<br>general', 
-                '25<br>Moderately<br>general', 
+                '0<br>Very<br>easy', 
+                '25<br>Moderately<br>easy', 
                 '50<br>Neutral<br>', 
-                '75<br>Moderately<br>specific', 
-                '100<br>Very<br>specific'
+                '75<br>Moderately<br>difficult', 
+                '100<br>Very<br>difficult'
             ],
             min: 0,
             max: 100,
@@ -250,25 +227,33 @@ function createTrials(trialsData) {
             slider_width: 600,
             button_label: 'Continue',
             data: {
-                custom_trial_type: 'specificity_rating',
+                custom_trial_type: 'difficulty_rating',
                 trial_number: globalTrialNumber,
                 participant_id: participant_id,
-                group_id: item.group_id,
-                word1: item.word1,
-                word2: item.word2,
-                word3: item.word3,
-                word4: item.word4,
-                category_response: item.category_response,
-                condition: item.condition,
-                difficulty: item.difficulty,
-                consensus: item.consensus
+                q_id: item.q_id,
+                group: item.group
+
             }
         };
 
-        experimentTrials.push(displayTrial, applicabilityTrial, specificityTrial);
+        experimentTrials.push(displayTrial, personalTrial, difficultyTrial);
     });
     
     return experimentTrials;
+}
+
+function loadQuestions(path) {
+    return new Promise((resolve, reject) => {
+        Papa.parse(path, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
+            transform: v => v.trim(),
+            complete: results => resolve(results.data),
+            error: reject
+        });
+    });
 }
 
 
@@ -279,7 +264,9 @@ async function runExperiment() {
     try {
         console.log('Participant ID:', participant_id);
 
+        const trialsData = await loadQuestions('questions.csv');
         const ratingTrials = createTrials(trialsData);
+
         console.log(`Created ${ratingTrials.length} trial screens`);
       
         timeline = [
