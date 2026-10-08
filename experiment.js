@@ -84,13 +84,208 @@ var final_screen = {
     }
 };
 
+const instructions = {
+    type: jsPsychHtmlKeyboardResponse,  
+    stimulus: `
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h2>Instructions</h2>
+            <p>In this experiment, you will see four words and a category description that someone created to group those words together.</p>
+            <p>Your task is to determine how good that description is for the given words. Specifcally, you'll rate: </p>
+            <ol style="text-align: left; display: inline-block;">
+                <li><strong>Applicability:</strong> How well does this description apply to all four words?
+                    <p style="font-weight: normal; margin: 5px 0 15px 0;">A category description might be better for some words than others. A more applicable description will describe all the words in the set. </p>
+                    <div style="display: flex; gap: 20px; margin: 15px 0 25px 0;">
+                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+                            <div style="background-color: #e74c3c; color: white; padding: 8px; font-weight: bold;">Less Applicable Example</div>
+                            <div style="padding: 12px; font-weight: normal;">
+                                <p><strong>Words:</strong> shoe, trowel, rope, lantern</p>
+                                <p><strong>Category:</strong> "Things you can burn your hand on"</p>
+                                <p><strong>Why it's less applicable:</strong> This description doesn't work well for all four words. You could burn your hand on a lantern or using a rope, but not on a shoe or a trowel.</p>
+                            </div>
+                        </div>
+                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+                            <div style="background-color: #27ae60; color: white; padding: 8px; font-weight: bold;">More Applicable Example</div>
+                            <div style="padding: 12px; font-weight: normal;">
+                                <p><strong>Words:</strong> shoe, trowel, rope, lantern</p>
+                                <p><strong>Category:</strong> "Things that might get lost during a camping trip"</p>
+                                <p><strong>Why it's more applicable:</strong> This description applies well to all four words. Each item could plausibly be lost while camping.</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><strong>Specificity:</strong> How specific is this description to the words?
+                    <p style="font-weight: normal; margin: 5px 0 15px 0;">Category descriptions can be broad or narrow. A more specific description only includes the items listed, and not any others.</p>
+                    <div style="display: flex; gap: 20px; margin: 15px 0 25px 0;">
+                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+                            <div style="background-color: #e74c3c; color: white; padding: 8px; font-weight: bold;">Less Specific Example</div>
+                            <div style="padding: 12px; font-weight: normal;">
+                                <p><strong>Words:</strong> apple, orange, cheese, yogurt</p>
+                                <p><strong>Category:</strong> "Things you can eat"</p>
+                                <p><strong>Why it's less specific:</strong> While true, this description is too general. It could apply to lots of other words.</p>
+                            </div>
+                        </div>
+                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+                            <div style="background-color: #27ae60; color: white; padding: 8px; font-weight: bold;">More Specific Example</div>
+                            <div style="padding: 12px; font-weight: normal;">
+                                <p><strong>Words:</strong> apple, orange, cheese, yogurt</p>
+                                <p><strong>Category:</strong> "Snacks you might find in a child's lunch box"</p>
+                                <p><strong>Why it's more specific:</strong> This description has a more specific context that excludes lots of similar words.</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+            <p><strong>Press any key when you're ready to begin.</strong></p>
+        </div>
+    `,
+    data: {
+        trial_type: 'instructions'
+    }
+};
+
+function createTrials(trialsData) {
+    const experimentTrials = [];
+    
+    trialsData.forEach((item) => {
+        globalTrialNumber++;
+        
+        const displayTrial = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                return `
+                    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                        <h3>Words:</h3>
+                        <div style="font-size: 24px; margin: 20px 0; padding: 20px; background-color: #f0f0f0; border-radius: 10px;">
+                            ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
+                        </div>
+                        <h3>Category:</h3>
+                        <div style="font-size: 22px; margin: 20px 0;">
+                            "${item.category_response}"
+                        </div>
+                        <p style="margin-top: 30px; color: #666;">Press any key to continue.</p>
+                    </div>
+                `;
+            },
+            data: {
+                trial_type: 'display',
+                trial_number: globalTrialNumber,
+                group_id: item.group_id
+            }
+        };
+
+        // applicability rating
+        const applicabilityTrial = {
+            type: jsPsychHtmlSliderResponse,
+                stimulus: function() {
+                    return `
+                        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                            <div style="font-size: 18px; margin-bottom: 15px; padding: 15px; background-color: #f0f0f0; border-radius: 8px;">
+                                ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
+                            </div>
+                            <div style="font-size: 16px; margin-bottom: 20px;">
+                                "${item.category_response}"
+                            </div>
+                            <p style="font-size: 20px; margin: 20px 0;"><strong>How well does this description apply to all four words?</strong></p>
+                        </div>
+                    `;
+                },
+                labels: [
+                '0<br>Not at all<br>applicable', 
+                '25<br>Not really all<br>applicable', 
+                '50<br>Neutral<br>', 
+                '75<br>Moderately<br>applicable', 
+                '100<br>Perfectly<br>applicable'
+            ],
+            min: 0,
+            max: 100,
+            step: 1,
+            slider_start: 50,
+            require_movement: true,
+            slider_width: 600,
+            button_label: 'Continue',
+            data: {
+                custom_trial_type: 'applicability_rating',
+                trial_number: globalTrialNumber,
+                participant_id: participant_id,
+                group_id: item.group_id,
+                word1: item.word1,
+                word2: item.word2,
+                word3: item.word3,
+                word4: item.word4,
+                category_response: item.category_response,
+                condition: item.condition,
+                difficulty: item.difficulty,
+                consensus: item.consensus
+            }
+        };
+
+        // specificity rating
+        const specificityTrial = {
+            type: jsPsychHtmlSliderResponse,
+            stimulus: function() {
+                return `
+                    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                        <div style="font-size: 18px; margin-bottom: 15px; padding: 15px; background-color: #f0f0f0; border-radius: 8px;">
+                            ${item.word1} &nbsp;&bull;&nbsp; ${item.word2} &nbsp;&bull;&nbsp; ${item.word3} &nbsp;&bull;&nbsp; ${item.word4}
+                        </div>
+                        <div style="font-size: 16px; margin-bottom: 20px;">
+                            "${item.category_response}"
+                        </div>
+                        <p style="font-size: 20px; margin: 20px 0;"><strong>How specific is this description?</strong></p>
+                    </div>
+                `;
+            },
+            labels: [
+                '0<br>Very<br>general', 
+                '25<br>Moderately<br>general', 
+                '50<br>Neutral<br>', 
+                '75<br>Moderately<br>specific', 
+                '100<br>Very<br>specific'
+            ],
+            min: 0,
+            max: 100,
+            step: 1,
+            slider_start: 50,
+            require_movement: true,
+            slider_width: 600,
+            button_label: 'Continue',
+            data: {
+                custom_trial_type: 'specificity_rating',
+                trial_number: globalTrialNumber,
+                participant_id: participant_id,
+                group_id: item.group_id,
+                word1: item.word1,
+                word2: item.word2,
+                word3: item.word3,
+                word4: item.word4,
+                category_response: item.category_response,
+                condition: item.condition,
+                difficulty: item.difficulty,
+                consensus: item.consensus
+            }
+        };
+
+        experimentTrials.push(displayTrial, applicabilityTrial, specificityTrial);
+    });
+    
+    return experimentTrials;
+}
+
+
+
+let timeline = [];
+
 async function runExperiment() {
     try {
         console.log('Participant ID:', participant_id);
+
+        const ratingTrials = createTrials(trialsData);
+        console.log(`Created ${ratingTrials.length} trial screens`);
       
         timeline = [
             consent,
-            //instructions,
+            instructions,
+            ...ratingTrials,
             //save_data,
             final_screen
         ];
