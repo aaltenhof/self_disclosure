@@ -86,19 +86,59 @@ var final_screen = {
     }
 };
 
+function exampleCard(label, color, question, explanation) {
+    return `
+        <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; text-align: left;">
+            <div style="background-color: ${color}; color: white; padding: 8px 12px; font-weight: bold;">${label}</div>
+            <div style="padding: 12px 14px;">
+                <p style="margin: 0 0 8px 0;"><strong>Question:</strong> "${question}"</p>
+                <p style="margin: 0; color: #555;">${explanation}</p>
+            </div>
+        </div>`;
+}
+
 const instructions = {
-    type: jsPsychHtmlKeyboardResponse,  
+    type: jsPsychHtmlKeyboardResponse,
     stimulus: `
-       <div class="consent-text">
-            <h3>Instructions</h3>
+        <div style="max-width: 800px; margin: 0 auto; text-align: left; line-height: 1.5;">
+            <h2 style="text-align: center;">Instructions</h2>
 
-            <p>In this task, you will be shown several prompts and questions. </p>
+            <p>In this task, you will see a series of questions and prompts, one at a time, similar to ones you might be asked in everyday conversation. You do <strong>not</strong> need to answer them. Instead, you will rate each one on two separate scales.</p>
 
-            <p>You'll be asked to rate them on two factors: how <strong> personal </strong> the question and how <strong> difficult </strong> it would be to answer. </p>
+            <h3 style="margin-top: 30px;">1. How personal is the question?</h3>
+            <p>Consider how much the question asks about <em>you</em>: your experiences, opinions, feelings, or private life. An impersonal question is one that anyone could answer in the same way.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; margin: 15px 0 25px 0;">
+                ${exampleCard("Less personal", "#7f8c8d",
+                    "What is the capital of Wisconsin?",
+                    "The answer has nothing to do with who you are.")}
+                ${exampleCard("More personal", "#2c6e9b",
+                    "What is something you are worried about right now?",
+                    "The answer depends on your own life, and it may be something you would not share with just anyone.")}
+            </div>
 
-            <p>After completing the task, you will also complete a short survey.</p>
-           
-            <p><strong>Press any key when you're ready to begin.</strong></p>
+            <h3 style="margin-top: 30px;">2. How difficult would it be to answer?</h3>
+            <p>Consider how much effort it would take <em>you</em> to give a good answer: how much you would need to think, remember, or explain.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; margin: 15px 0 25px 0;">
+                ${exampleCard("Less difficult", "#7f8c8d",
+                    "Name an animal that lives in the ocean.",
+                    "Most people could answer right away, with little thought.")}
+                ${exampleCard("More difficult", "#2c6e9b",
+                    "Explain how a refrigerator keeps food cold.",
+                    "A good answer would take careful thought and knowledge most people do not have at hand.")}
+            </div>
+
+            <div style="background-color: #f7f7f7; border-left: 4px solid #2c6e9b; border-radius: 4px; padding: 12px 18px; margin: 25px 0;">
+                <p style="margin: 0 0 8px 0;"><strong>Keep in mind:</strong></p>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>The two ratings are independent. A question can be very personal but easy to answer, or impersonal but hard.</li>
+                    <li>There are no right or wrong ratings. We are interested in your impressions.</li>
+                    <li>You will need to move each slider before continuing. Place it wherever best reflects your judgment, using the full range as needed.</li>
+                </ul>
+            </div>
+
+            <p>After the rating task, you will complete a brief survey.</p>
+
+            <p style="text-align: center; margin-top: 30px;"><strong>Press any key when you are ready to begin.</strong></p>
         </div>
     `,
     data: {
@@ -189,6 +229,7 @@ function createTrials(trialsData) {
             data: {
                 custom_trial_type: 'difficulty_rating',
                 trial_number: globalTrialNumber,
+                question: item.question,
                 participant_id: participant_id,
                 q_id: item.q_id,
                 group: item.group
