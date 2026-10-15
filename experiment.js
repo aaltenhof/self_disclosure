@@ -75,7 +75,7 @@ var final_screen = {
     on_finish: function() {
         setTimeout(function() {
             // Pass sona_id to Qualtrics as a URL parameter
-            let qualtricsUrl = `https://uwmadison.co1.qualtrics.com/jfe/form/SV_bCWCCMEZoDiiA3s`; //update
+            let qualtricsUrl = `https://uwmadison.co1.qualtrics.com/jfe/form/SV_5BwfnxR4uYqlnX8`; //update
             
             if (sonaId) {
                 qualtricsUrl += `?sona_id=${sonaId}`;
