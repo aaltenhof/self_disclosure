@@ -75,7 +75,7 @@ var final_screen = {
     on_finish: function() {
         setTimeout(function() {
             // Pass sona_id to Qualtrics as a URL parameter
-            let qualtricsUrl = `https://uwmadison.co1.qualtrics.com/jfe/form/SV_5BwfnxR4uYqlnX8`; //update
+            let qualtricsUrl = `https://uwmadison.co1.qualtrics.com/jfe/form/SV_5BwfnxR4uYqlnX8`;
             
             if (sonaId) {
                 qualtricsUrl += `?sona_id=${sonaId}`;
@@ -89,54 +89,15 @@ var final_screen = {
 const instructions = {
     type: jsPsychHtmlKeyboardResponse,  
     stimulus: `
-        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-            <h2>Instructions</h2>
-            <p>In this experiment, you will see four words and a category description that someone created to group those words together.</p>
-            <p>Your task is to determine how good that description is for the given words. Specifcally, you'll rate: </p>
-            <ol style="text-align: left; display: inline-block;">
-                <li><strong>Applicability:</strong> How well does this description apply to all four words?
-                    <p style="font-weight: normal; margin: 5px 0 15px 0;">A category description might be better for some words than others. A more applicable description will describe all the words in the set. </p>
-                    <div style="display: flex; gap: 20px; margin: 15px 0 25px 0;">
-                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-                            <div style="background-color: #e74c3c; color: white; padding: 8px; font-weight: bold;">Less Applicable Example</div>
-                            <div style="padding: 12px; font-weight: normal;">
-                                <p><strong>Words:</strong> shoe, trowel, rope, lantern</p>
-                                <p><strong>Category:</strong> "Things you can burn your hand on"</p>
-                                <p><strong>Why it's less applicable:</strong> This description doesn't work well for all four words. You could burn your hand on a lantern or using a rope, but not on a shoe or a trowel.</p>
-                            </div>
-                        </div>
-                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-                            <div style="background-color: #27ae60; color: white; padding: 8px; font-weight: bold;">More Applicable Example</div>
-                            <div style="padding: 12px; font-weight: normal;">
-                                <p><strong>Words:</strong> shoe, trowel, rope, lantern</p>
-                                <p><strong>Category:</strong> "Things that might get lost during a camping trip"</p>
-                                <p><strong>Why it's more applicable:</strong> This description applies well to all four words. Each item could plausibly be lost while camping.</p>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <li><strong>Specificity:</strong> How specific is this description to the words?
-                    <p style="font-weight: normal; margin: 5px 0 15px 0;">Category descriptions can be broad or narrow. A more specific description only includes the items listed, and not any others.</p>
-                    <div style="display: flex; gap: 20px; margin: 15px 0 25px 0;">
-                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-                            <div style="background-color: #e74c3c; color: white; padding: 8px; font-weight: bold;">Less Specific Example</div>
-                            <div style="padding: 12px; font-weight: normal;">
-                                <p><strong>Words:</strong> apple, orange, cheese, yogurt</p>
-                                <p><strong>Category:</strong> "Things you can eat"</p>
-                                <p><strong>Why it's less specific:</strong> While true, this description is too general. It could apply to lots of other words.</p>
-                            </div>
-                        </div>
-                        <div style="flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-                            <div style="background-color: #27ae60; color: white; padding: 8px; font-weight: bold;">More Specific Example</div>
-                            <div style="padding: 12px; font-weight: normal;">
-                                <p><strong>Words:</strong> apple, orange, cheese, yogurt</p>
-                                <p><strong>Category:</strong> "Snacks you might find in a child's lunch box"</p>
-                                <p><strong>Why it's more specific:</strong> This description has a more specific context that excludes lots of similar words.</p>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ol>
+       <div class="consent-text">
+            <h3>Instructions</h3>
+
+            <p>In this task, you will be shown several prompts and questions. </p>
+
+            <p>You'll be asked to rate them on two factors: how <strong> personal </strong> the question and how <strong> difficult </strong> it would be to answer. </p>
+
+            <p>After completing the task, you will also complete a short survey.</p>
+           
             <p><strong>Press any key when you're ready to begin.</strong></p>
         </div>
     `,
@@ -255,6 +216,83 @@ function loadQuestions(path) {
     });
 }
 
+function getFilteredData() {
+    const personalTrials = jsPsych.data.get()
+        .filter({ custom_trial_type: 'personal_rating' })
+        .values();
+    
+    const difficultyTrials = jsPsych.data.get()
+        .filter({ custom_trial_type: 'difficulty_rating' })
+        .values();
+
+    // create a map of personal trial ratings by trial_number
+    const personalMap = new Map();
+    personalTrials.forEach(trial => {
+        personalMap.set(trial.trial_number, {
+            response: trial.response,
+            rt: trial.rt
+        });
+    });
+
+    if (difficultyTrials.length === 0) {
+        console.warn("No trials found for saving!");
+        return 'subjCode,trial_num,question,q_id,group,difficulty,personal, personal_rt,personal_rt\n';
+    }
+    
+    try {
+        const rows = [];
+        
+        const header = 'subjCode,trial_num,question,q_id,group,difficulty,difficulty_rt,personal,personal_rt';
+
+        difficultyTrials.forEach((trial) => {
+            const personalData = personalMap.get(trial.trial_number) || { response: '', rt: '' };
+
+            rows.push([
+                trial.participant_id || participant_id,
+                trial.trial_number ?? 'NA',
+                trial.question ?? '',
+                trial.q_id ?? '',
+                trial.group ?? '',
+                trial.response ?? '', //difficulty
+                Math.round(trial.rt ?? 0),
+                personalData.response ?? '',
+                Math.round(personalData.rt ?? 0)
+            ]);
+        });
+        
+        const csvRows = rows.map(row => {
+            return row.map(value => {
+                if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                    return `"${value.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+                }
+                return value;
+            }).join(',');
+        });
+        
+        const finalCSV = header + '\n' + csvRows.join('\n');
+        return finalCSV;
+    } catch (error) {
+        console.error("Error in getFilteredData:", error);
+        return 'subjCode,trial_num,question,q_id,group,difficulty,personal, personal_rt,personal_rt\nerror,0,0,0,error,error,error,error,error,0,0,0,0,0,0\n';
+    }
+}
+
+
+var save_data = {
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: "GpR2JR3s0yDC", 
+    filename: `${participant_id}.csv`,
+    data_string: getFilteredData,
+    on_finish: function(data) {
+        if (data.success) {
+            console.log('Data saved successfully!');
+        } else {
+            console.error('Error saving to DataPipe:', data.message);
+        }
+    }
+};
+
 
 
 let timeline = [];
@@ -272,7 +310,7 @@ async function runExperiment() {
             consent,
             instructions,
             ...ratingTrials,
-            //save_data,
+            save_data,
             final_screen
         ];
         
